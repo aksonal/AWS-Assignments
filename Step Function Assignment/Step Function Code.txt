@@ -1,0 +1,43 @@
+#code
+
+{
+  "Comment": "An AWS Step Functions to start, stop and terminate EC2 instance.",
+  "StartAt": "Input Received",
+  "States": {
+    "StartInstance": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:681904993460:function:StartEC2",
+      "End": true
+    }, 
+    "StopInstance": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:681904993460:function:StopEC2",
+      "End": true
+    },
+    "TerminateInstance": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:681904993460:function:TerminateEC2",
+      "End": true
+    },
+    "Input Received": {
+        "Type" : "Choice",
+        "Choices": [ 
+            {
+            "Variable": "$.Input",
+            "StringEquals": "Start",
+            "Next": "StartInstance"
+          },
+          {
+            "Variable": "$.Input",
+            "StringEquals": "Stop",
+            "Next": "StopInstance"
+          },
+          {
+            "Variable": "$.Input",
+            "StringEquals": "Terminate",
+            "Next": "TerminateInstance"
+          }
+      ]
+    }
+  }
+}

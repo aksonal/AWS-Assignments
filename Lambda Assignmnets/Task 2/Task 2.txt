@@ -1,0 +1,3 @@
+Task#2:
+
+When you terminate an EC2 instance, a snapshot should be created from the EBS volume attached to the EC2 instance automatically and store it in an S3 bucket. Create a lambda function to automate the above.
