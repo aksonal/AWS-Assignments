@@ -13,7 +13,7 @@
         "Password": {
             "Description": "Password of the IAM User being Created",
             "Type": "String",
-            "Default": "abcd"
+            "Default": "****"
         }
 },
 
