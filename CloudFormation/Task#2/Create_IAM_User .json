@@ -2,7 +2,7 @@
 
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Create an IAM User using CloudFormation",
+    "Description": "Create an IAM User and attach three policies to the user using CloudFormation",
 
      "Parameters": {
 
