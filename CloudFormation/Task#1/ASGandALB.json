@@ -1,0 +1,270 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Auto Scaling Group (ASG)", 
+
+    "Parameters": {
+        
+        "SecurityGroup": {
+            "Description": "Security Group of the VPC used",
+            "Type": "String",
+            "Default": "sg-078c5162bcaccbbe4"
+        },
+
+         "VPC": {
+            "Description": "VPC used",
+            "Type": "String",
+            "Default": "vpc-004385d9387eaa1a2"
+        },
+        
+        "Instance1": {
+            "Description": "Public Instance 1",
+            "Type": "String",
+            "Default": "i-0007c8aec2a1864c2"
+        },
+        
+        "Instance2": {
+            "Description": "Public Instance 2",
+            "Type": "String",
+            "Default": "i-07c83226977c9208e"
+        },
+        
+        "PubSubnet1": {
+            "Description": "PublicSubnet 1",
+            "Type": "String",
+            "Default": "subnet-06fa32d1af50fa4e7"
+        },
+        "PubSubnet2": {
+            "Description": "PublicSubnet2",
+            "Type": "String",
+            "Default": "subnet-0b94e67d54fd3f32d"
+        },
+        
+        "SG": {
+            "Description": "Security Group",
+            "Type": "String",
+            "Default": "sg-078c5162bcaccbbe4"
+        }
+        
+   
+},
+
+ "Resources": {
+
+"LaunchConfig" : {
+     "Type" : "AWS::AutoScaling::LaunchConfiguration",
+     "Properties" : {
+        "ImageId" : "ami-0470e33cd681b2476",
+        "SecurityGroups" : [ { "Ref" : "SecurityGroup" }],
+        "InstanceType" : "t2.micro",
+        "BlockDeviceMappings" : [ {
+              "DeviceName" : "/dev/sdk",
+              "Ebs" : {"VolumeSize" : "8"}
+          }, {
+             "DeviceName" : "/dev/xvda",
+             "VirtualName" : "ephemeral0"
+       } ]
+    }
+ },
+
+"ASG" : {
+     "Type" : "AWS::AutoScaling::AutoScalingGroup",
+     "Properties" : {
+        "AvailabilityZones" : { "Fn::GetAZs" : "ap-south-1" },
+        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : "3"
+        
+     }
+ },
+
+ "ALBSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "SSH and Port 80",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        
+        "EC2TargetGroup1": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckIntervalSeconds": 30,
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": 15,
+                "HealthyThresholdCount": 5,
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": "EC2TargetGroup1",
+                "Port": 80,
+                "Protocol": "HTTP",
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "20"
+                    }
+                ],
+                "Targets": [
+                    {
+                        "Id": {
+                            "Ref": "Instance1"
+                        },
+                        "Port": 80
+                    }
+                ],
+                
+                "UnhealthyThresholdCount": 3,
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "EC2TargetGroup1"
+                    },
+                    {
+                        "Key": "Port",
+                        "Value": 80
+                    }
+                ]
+            }
+        },
+        
+         "EC2TargetGroup2": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckIntervalSeconds": 30,
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": 15,
+                "HealthyThresholdCount": 5,
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": "EC2TargetGroup2",
+                "Port": 80,
+                "Protocol": "HTTP",
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "20"
+                    }
+                ],
+                "Targets": [
+                    {
+                        "Id": {
+                            "Ref": "Instance2"
+                        },
+                        "Port": 80
+                    }
+                ],
+                
+                "UnhealthyThresholdCount": 3,
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "EC2TargetGroup2"
+                    },
+                    {
+                        "Key": "Port",
+                        "Value": 80
+                    }
+                ]
+            }
+        },
+        
+        
+        "ALBListener1": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "EC2TargetGroup1"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "ApplicationLoadBalancer1"
+                },
+                "Port": 80,
+                "Protocol": "HTTP"
+            }
+        },
+        
+        "ALBListener2": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "EC2TargetGroup2"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "ApplicationLoadBalancer2"
+                },
+                "Port": 80,
+                "Protocol": "HTTP"
+            }
+        },
+        
+        
+        "ApplicationLoadBalancer1": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Ref": "PubSubnet1"
+                    },
+                     {
+                        "Ref": "PubSubnet2"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "ALBSecurityGroup"
+                    }
+                ]
+            }
+        },
+        
+        "ApplicationLoadBalancer2": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Ref": "PubSubnet1"
+                    },
+                     {
+                        "Ref": "PubSubnet2"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "ALBSecurityGroup"
+                    }
+                ]
+            }
+        }
+        
+    }
+ 
+ }

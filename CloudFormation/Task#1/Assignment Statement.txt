@@ -1,0 +1,4 @@
+Task: 
+
+Create a VPC with 2 public subnets, 2 private subnets in two different availability zones. Create an autoscaling group (with 2 ec2 instances running from two private/public subnets). The EC2 instances in the autoscaling group should have apache webserver installed and run on port 80. Create an Application load balancer and add the instances as target group.
+After successfully created the stack, you should get an URL of application load balancer which can be browsed from a browser to access the contents of EC2 instances.
