@@ -1,0 +1,40 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create Lambda function to create an AMI Image of the Instance using CloudFormation",
+
+ "Resources": {
+
+ "LambdaFunction" : {
+  "Type" : "AWS::Lambda::Function",
+  "Properties" : {
+
+   "Code": {
+        "ZipFile": "import boto3\n\ndef lambda_handler(event, context):\n\t# TODO implement\n\tboto3.client('ec2').create_image(InstanceId='i-0ba71f84f8179050d', NoReboot=True, Name='Instance_Image')"
+    },
+      "Description" : "AMI Image of the public Instance containing web server",
+      
+      "FunctionName" : "Lambda_to_create_IAM_Image",
+      "Handler" : "index.lambda_handler",
+      "Role" : "arn:aws:iam::681904993460:role/Lambda_full_EC2_Access",
+      "Runtime" : "python3.7",
+      
+      "Timeout" : 300
+
+}
+},
+
+ "InvokeLambda": {
+        "Type": "Custom::InvokeLambda",
+        "Version": "1.0",
+        "Properties": {
+        "ServiceToken": {
+                "Fn::GetAtt": [
+                    "LambdaFunction",
+                    "Arn"
+                ]
+            }
+        }
+    }
+
+}
+}
