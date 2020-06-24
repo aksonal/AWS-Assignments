@@ -1,0 +1,9 @@
+Task#
+
+Create API’s using API Gateway that perform below operation by invoking lambda function
+
+-API that reads data from the Student table.
+-API that insert data into Student table
+-API to search data based on specific criteria like percentage from the  Student table.
+
+
